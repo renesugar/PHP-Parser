@@ -1,14 +1,197 @@
-Version 4.0.1-dev
+Version 4.5.1-dev
 -----------------
 
-### Changed
+Nothing yet.
 
-* Added checks to node traverser to prevent replacing a statement with an expression or vice versa.
-  This should prevent common mistakes in the implementation of node visitors.
+Version 4.5.0 (2020-06-03)
+--------------------------
 
 ### Added
 
-* Added the following method to `BuilderFactory`, to simplify creation of expressions:
+* [PHP 8.0] Added support for the mixed type. This means `mixed` types are now parsed as an
+  `Identifier` rather than a `Name`.
+* [PHP 8.0] Added support for catching without capturing the exception. This means that
+  `Catch_::$var` may now be null.
+
+Version 4.4.0 (2020-04-10)
+--------------------------
+
+### Added
+
+* Added support for passing union types in builders.
+* Added end line, token position and file position information for comments.
+* Added `getProperty()` method to `ClassLike` nodes.
+
+### Fixed
+
+* Fixed generation of invalid code when using the formatting preserving pretty printer, and
+  inserting code next to certain nop statements. The formatting is still ugly though.
+* `getDocComment()` no longer requires that the very last comment before a node be a doc comment.
+  There may not be non-doc comments between the doc comment and the declaration.
+* Allowed arbitrary expressions in `isset()` and `list()`, rather than just variables.
+  In particular, this allows `isset(($x))`, which is legal PHP code.
+* [PHP 8.0] Add support for [variable syntax tweaks RFC](https://wiki.php.net/rfc/variable_syntax_tweaks).
+
+Version 4.3.0 (2019-11-08)
+--------------------------
+
+### Added
+
+* [PHP 8.0] Added support for union types using a new `UnionType` node.
+
+Version 4.2.5 (2019-10-25)
+--------------------------
+
+### Changed
+
+* Tests and documentation are no longer included in source archives. They can still be accessed
+  by cloning the repository.
+* php-yacc is now used to generate the parser. This has no impact on users of the library.
+
+Version 4.2.4 (2019-09-01)
+--------------------------
+
+### Added
+
+* Added getProperties(), getConstants() and getTraitUses() to ClassLike. (#629, #630)
+
+### Fixed
+
+* Fixed flexible heredoc emulation to check for digits after the end label. This synchronizes
+  behavior with the upcoming PHP 7.3.10 release.
+
+Version 4.2.3 (2019-08-12)
+--------------------------
+
+### Added
+
+* [PHP 7.4] Add support for numeric literal separators. (#615)
+
+### Fixed
+
+* Fixed resolution of return types for arrow functions. (#613)
+* Fixed compatibility with PHP 7.4.
+
+Version 4.2.2 (2019-05-25)
+--------------------------
+
+### Added
+
+* [PHP 7.4] Add support for arrow functions using a new `Expr\ArrowFunction` node. (#602)
+* [PHP 7.4] Add support for array spreads, using a new `unpack` subnode on `ArrayItem`. (#609)
+* Added support for inserting into empty list nodes in the formatting preserving pretty printer.
+
+### Changed
+
+* `php-parse` will now print messages to stderr, so that stdout only contains the actual result of
+  the operation (such as a JSON dump). (#605)
+
+### Fixed
+
+* Fixed attribute assignment for zero-length nop statements, and a related assertion failure in
+  the formatting-preserving pretty printer. (#589)
+
+Version 4.2.1 (2019-02-16)
+--------------------------
+
+### Added
+
+* [PHP 7.4] Add support for `??=` operator through a new `AssignOp\Coalesce` node. (#575)
+
+Version 4.2.0 (2019-01-12)
+--------------------------
+
+### Added
+
+* [PHP 7.4] Add support for typed properties through a new `type` subnode of `Stmt\Property`.
+  Additionally `Builder\Property` now has a `setType()` method. (#567)
+* Add `kind` attribute to `Cast\Double_`, which allows to distinguish between `(float)`,
+  `(double)` and `(real)`. The form of the cast will be preserved by the pretty printer. (#565)
+
+### Fixed
+
+* Remove assertion when pretty printing anonymous class with a name (#554).
+
+Version 4.1.1 (2018-12-26)
+--------------------------
+
+### Fixed
+
+* Fix "undefined offset" notice when parsing specific malformed code (#551).
+
+### Added
+
+* Support error recovery for missing return type (`function foo() : {}`) (#544).
+
+Version 4.1.0 (2018-10-10)
+--------------------------
+
+### Added
+
+* Added support for PHP 7.3 flexible heredoc/nowdoc strings, completing support for PHP 7.3. There
+  are two caveats for this feature:
+   * In some rare, pathological cases flexible heredoc/nowdoc strings change the interpretation of
+     existing doc strings. PHP-Parser will now use the new interpretation.
+   * Flexible heredoc/nowdoc strings require special support from the lexer. Because this is not
+     available on PHP versions before 7.3, support has to be emulated. This emulation is not perfect
+     and some cases which we do not expect to occur in practice (such as flexible doc strings being
+     nested within each other through abuse of variable-variable interpolation syntax) may not be
+     recognized correctly.
+* Added `DONT_TRAVERSE_CURRENT_AND_CHILDREN` to `NodeTraverser` to skip both traversal of child
+  nodes, and prevent subsequent visitors from visiting the current node.
+
+Version 4.0.4 (2018-09-18)
+--------------------------
+
+### Added
+
+* The following methods have been added to `BuilderFactory`:
+  * `useTrait()` (fluent builder)
+  * `traitUseAdaptation()` (fluent builder)
+  * `useFunction()` (fluent builder)
+  * `useConst()` (fluent builder)
+  * `var()`
+  * `propertyFetch()`
+  
+### Deprecated
+
+* `Builder\Param::setTypeHint()` has been deprecated in favor of the newly introduced
+  `Builder\Param::setType()`.
+
+Version 4.0.3 (2018-07-15)
+--------------------------
+
+### Fixed
+
+* Fixed possible undefined offset notice in formatting-preserving printer. (#513)
+
+### Added
+
+* Improved error recovery inside arrays.
+* Preserve trailing comment inside classes. **Note:** This change is possibly BC breaking if your
+  code validates that classes can only contain certain statement types. After this change, classes
+  can also contain Nop statements, while this was not previously possible. (#509)
+
+Version 4.0.2 (2018-06-03)
+--------------------------
+
+### Added
+
+* Improved error recovery inside classes.
+* Support error recovery for `foreach` without `as`.
+* Support error recovery for parameters without variable (`function (Type ) {}`).
+* Support error recovery for functions without body (`function ($foo)`).
+
+Version 4.0.1 (2018-03-25)
+--------------------------
+
+### Added
+
+* [PHP 7.3] Added support for trailing commas in function calls.
+* [PHP 7.3] Added support for by-reference array destructuring. 
+* Added checks to node traverser to prevent replacing a statement with an expression or vice versa.
+  This should prevent common mistakes in the implementation of node visitors.
+* Added the following methods to `BuilderFactory`, to simplify creation of expressions:
   * `funcCall()`
   * `methodCall()`
   * `staticCall()`
